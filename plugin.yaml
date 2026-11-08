@@ -1,0 +1,99 @@
+name: claude-pacer
+label: Claude Pacer
+kind: standalone
+version: 0.4.0
+description: >
+  Paces a Claude Pro/Max subscription. Reads the 5-hour and weekly usage windows through Hermes'
+  own usage fetcher (the numbers /usage shows), draws a pace line to everything but a reserve you
+  keep for your own chats (reserve_pct, 20 % by default), and answers with a mode, skip / light /
+  normal / heavy, plus a one-line reason. The agent asks with the
+  claude_pace tool, you ask with /pace or `hermes pace`, and a cron job gates on it with
+  `hermes pace gate --priority vital|normal|optional|spare`: in skip mode a normal job's run is
+  skipped at no token cost while a vital job keeps running, lightly: pacing never stops a vital job,
+  it may use the reserve and waits only while a limit is used up (the API would refuse it anyway);
+  optional jobs also wait while the week runs hot, spare jobs run only on spare capacity.
+  Thresholds are plugin settings. Disclosure: each check (cached 60 s) runs Hermes' own Anthropic
+  usage fetch, the one /usage runs: a GET to Anthropic's OAuth usage endpoint with the profile's
+  Claude sign-in. If that sign-in is a borrowed Claude Code login whose access token has expired,
+  Hermes refreshes it first (a POST to Anthropic's OAuth token endpoint and a rewrite of the Claude
+  Code credentials file), as /usage would. The plugin's own code never reads, holds or writes a
+  credential and stores nothing on disk.
+requires_hermes: ">=0.22.7"
+license: MIT
+homepage: https://github.com/Rubenkivilang/claude-pacer
+manifest_version: 2
+tags: [claude, anthropic, usage, rate-limits, cron, budget]
+provides_tools:
+  - claude_pace
+provides_hooks: []
+config_schema:
+  reserve_pct:
+    type: float
+    default: 20
+    label: Reserve %
+    description: Share of the weekly allowance to keep unused for your own chats. Agents and cron jobs are paced to the rest (100 minus this) and skip once the week reaches it; only cron jobs gated as vital may run into it.
+  pace_burst_pct:
+    type: float
+    default: 10
+    label: Pace head start %
+    description: Added to the pace line so an early-week burst doesn't read as over pace.
+  pace_skip_margin:
+    type: float
+    default: 15
+    label: Skip margin (points over pace)
+    description: Skip when the week is more than this many points over pace.
+  pace_heavy_margin:
+    type: float
+    default: 25
+    label: Heavy margin (points under pace)
+    description: Only with heavy_ramp 0 (the straight rule) - heavy when the week is more than this many points under pace and the 5-hour window is quiet.
+  heavy_ramp:
+    type: float
+    default: 3
+    label: Heavy ramp (back-loading)
+    description: Heavy work is back-loaded - heavy while the week is under a line that climbs exponentially from 0 at the reset to the target at the next reset (target x (e^(ramp x elapsed) - 1) / (e^ramp - 1); 14.6 % mid-week, 58 % with 17 h left). Higher is later and steeper; 0 uses the straight rule (pace minus the heavy margin).
+  h5_skip_pct:
+    type: float
+    default: 85
+    label: 5-hour hard stop %
+    description: Skip at or above this 5-hour use.
+  h5_light_pct:
+    type: float
+    default: 60
+    label: 5-hour light %
+    description: Light at or above this 5-hour use.
+  h5_heavy_max:
+    type: float
+    default: 50
+    label: 5-hour ceiling for heavy %
+    description: Heavy only while the 5-hour window is under this.
+  heavy_reset_within_h:
+    type: float
+    default: 24
+    label: Use-it-or-lose-it window (hours)
+    description: Heavy when the week resets within this many hours while use is still the next setting's margin or more under the target.
+  heavy_reset_margin:
+    type: float
+    default: 25
+    label: Use-it-or-lose-it margin (points under target)
+    description: Points under the target (100 minus the reserve) at or below which the last hours before the reset count as spare capacity.
+  h5_fresh_within_min:
+    type: float
+    default: 45
+    label: 5-hour reset grace (minutes)
+    description: A 5-hour window that resets within this many minutes counts as fresh for light and heavy ...
+  h5_burn_per_min:
+    type: float
+    default: 0.5
+    label: 5-hour burn per minute %
+    description: ... unless this much use per minute until the reset would reach the 5-hour hard stop.
+  no_pace_week_light_pct:
+    type: float
+    default: 60
+    label: Light % without a reset time
+    description: When the weekly reset time is unknown there is no pace line; light at or above this weekly use.
+  cache_seconds:
+    type: float
+    default: 60
+    label: Cache (seconds)
+    description: Reuse a usage read this long before asking again (0 = every call). Memory only.
