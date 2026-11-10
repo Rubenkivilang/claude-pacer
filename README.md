@@ -1,14 +1,14 @@
 # claude-pacer
 
-claude-pacer is a Hermes plugin for power users and other people running heavy automated workflows in Hermes Agent using a Claude Pro/Max subscription as the brain.
+claude-pacer is a Hermes plugin for anyone running heavy automated workflows in Hermes Agent with a Claude Pro/Max subscription as the brain.
 
-**Problem:** your Hermes agents, cron jobs and own chats share the same 5-hour and weekly Claude limits. This means that badly managed heavy automation can spend the whole limit by midweek, and then the whole operation stands still and has to wait for the weekly reset. In turn that leads to missed cron jobs, reminders not coming through, emails not being read, etc.
+**Problem:** your Hermes agents, cron jobs and your own chats share the same 5-hour and weekly Claude limits. This means that badly managed heavy automation can spend the whole limit by midweek, and then the whole operation stands still and has to wait for the weekly reset. In turn that leads to missed cron jobs, reminders not coming through, emails not being read, etc.
 
 Or on the other end, a quiet week leaves what is essentially paid allowance unused, when it could have been spent on productive tasks that would help you later.
 
 **What it does:** the plugin reads both limits (the numbers `/usage` shows) and compares the week to a pace line that aims to spend all usage before the reset without running out at any point (it saves a reserve by the end to account for unpredictable user behavior, 20% by default). Based on your usage compared to the pace line, it picks one of these modes:
 
-- **normal**: on pace as expected? Then everything runs as usual.
+- **normal**: on pace? Agents work as usual and vital, normal and optional cron jobs run; spare jobs wait for heavy mode.
 - **light**: over pace, or a hot 5-hour window? Agents are told to avoid subagents if possible to save tokens, and optional cron jobs wait.
 - **skip**: far over pace, at your reserve, or about to hit the 5-hour limit? Then only vital cron jobs that are needed for daily function run; the rest are skipped before the model is called (zero tokens).
 - **heavy**: lots of usage left late in the week? Spare cron jobs (big non-urgent work like automated bug-fix runs or database organization) use the leftover allowance.
