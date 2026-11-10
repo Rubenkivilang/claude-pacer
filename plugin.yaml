@@ -3,7 +3,8 @@ label: Claude Pacer
 kind: standalone
 version: 0.4.1
 description: >
-  Paces a Claude Pro/Max subscription. Reads the 5-hour and weekly usage windows through Hermes'
+  For Hermes running on a Claude Pro/Max subscription: paces agents and cron jobs across the plan's
+  5-hour and weekly limits. Reads both usage windows through Hermes'
   own usage fetcher (the numbers /usage shows), draws a pace line to everything but a reserve you
   keep for your own chats (reserve_pct, 20 % by default), and answers with a mode, skip / light /
   normal / heavy, plus a one-line reason. The agent asks with the

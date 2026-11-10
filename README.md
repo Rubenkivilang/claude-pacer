@@ -1,10 +1,18 @@
 # claude-pacer
 
-Pace a Claude Pro/Max subscription across its week. The plugin reads the two usage windows Hermes
-already shows in `/usage` (the 5-hour window and the weekly one), draws a pace line to the share of
-the week your agents may use (everything but the reserve you keep for your own chats, 20 % unless you
-set `reserve_pct`) and answers with a mode, **skip**, **light**, **normal** or **heavy**, plus a
-one-line reason.
+For Hermes Agent running on a Claude Pro/Max subscription: claude-pacer paces your agents and cron
+jobs across the plan's weekly and 5-hour limits.
+
+On a Claude Pro/Max plan, your Hermes agents, your cron jobs and your own chats all share one 5-hour
+limit and one weekly limit. Heavy automation can use up the week by midweek, and then everything,
+your own chats included, waits days for the reset. A quiet week has the opposite problem: allowance
+you paid for is still unused when the week resets.
+
+claude-pacer reads both limits (the same numbers Hermes shows in `/usage`), draws a pace line to the
+share of the week your agents and crons may use (everything but the reserve you keep for your own
+chats, 20 % unless you set `reserve_pct`) and answers with a mode, **skip**, **light**, **normal** or
+**heavy**, plus a one-line reason. Agents get it from a tool before big work; cron jobs opt in with a
+priority gate that skips a run before the model is called, so a skipped run spends no tokens.
 
 - The agent calls the **`claude_pace`** tool before big or optional work and follows its guidance.
 - You type **`/pace`** in any chat surface, or run **`hermes pace`**, and get one line:
