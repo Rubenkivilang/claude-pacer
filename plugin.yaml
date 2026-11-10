@@ -3,22 +3,12 @@ label: Claude Pacer
 kind: standalone
 version: 0.4.1
 description: >
-  For Hermes running on a Claude Pro/Max subscription: paces agents and cron jobs across the plan's
-  5-hour and weekly limits. Reads both usage windows through Hermes'
-  own usage fetcher (the numbers /usage shows), draws a pace line to everything but a reserve you
-  keep for your own chats (reserve_pct, 20 % by default), and answers with a mode, skip / light /
-  normal / heavy, plus a one-line reason. The agent asks with the
-  claude_pace tool, you ask with /pace or `hermes pace`, and a cron job gates on it with
-  `hermes pace gate --priority vital|normal|optional|spare`: in skip mode a normal job's run is
-  skipped at no token cost while a vital job keeps running, lightly: pacing never stops a vital job,
-  it may use the reserve and waits only while a limit is used up (the API would refuse it anyway);
-  optional jobs also wait while the week runs hot, spare jobs run only on spare capacity.
-  Thresholds are plugin settings. Disclosure: each check (cached 60 s) runs Hermes' own Anthropic
-  usage fetch, the one /usage runs: a GET to Anthropic's OAuth usage endpoint with the profile's
-  Claude sign-in. If that sign-in is a borrowed Claude Code login whose access token has expired,
-  Hermes refreshes it first (a POST to Anthropic's OAuth token endpoint and a rewrite of the Claude
-  Code credentials file), as /usage would. The plugin's own code never reads, holds or writes a
-  credential and stores nothing on disk.
+  For power users running heavy automation in Hermes on a Claude Pro/Max subscription: claude-pacer
+  paces agents and cron jobs so the weekly limit lasts to the reset, keeps a reserve, and spends the
+  leftovers on spare jobs before it. Disclosure: each check runs Hermes' own Claude usage fetch (the
+  one /usage runs), which first refreshes an expired borrowed Claude Code login (a POST to Anthropic's
+  OAuth token endpoint and a rewrite of the Claude Code credentials file); the plugin's own code never
+  reads, holds or writes a credential.
 requires_hermes: ">=0.22.7"
 license: MIT
 homepage: https://github.com/Rubenkivilang/claude-pacer

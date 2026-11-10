@@ -1,18 +1,21 @@
 # claude-pacer
 
-A plugin for Hermes Agent running on a Claude Pro/Max subscription: claude-pacer paces your agents and cron
-jobs across the plan's weekly and 5-hour limits.
+claude-pacer is a Hermes plugin for power users and other people running heavy automated workflows in Hermes Agent using a Claude Pro/Max subscription as the brain.
 
-On a Claude Pro/Max plan, your Hermes agents, your cron jobs and your own chats all share one 5-hour
-limit and one weekly limit. Heavy automation can use up the week by midweek, and then everything,
-your own chats included, waits days for the reset. A quiet week has the opposite problem: allowance
-you paid for is still unused when the week resets.
+**Problem:** your Hermes agents, cron jobs and own chats share the same 5-hour and weekly Claude limits. This means that badly managed heavy automation can spend the whole limit by midweek, and then the whole operation stands still and has to wait for the weekly reset. In turn that leads to missed cron jobs, reminders not coming through, emails not being read, etc.
 
-claude-pacer reads both limits (the same numbers Hermes shows in `/usage`), draws a pace line to the
-share of the week your agents and crons may use (everything but the reserve you keep for your own
-chats, 20 % unless you set `reserve_pct`) and answers with a mode, **skip**, **light**, **normal** or
-**heavy**, plus a one-line reason. Agents get it from a tool before big work; cron jobs opt in with a
-priority gate that skips a run before the model is called, so a skipped run spends no tokens.
+Or on the other end, a quiet week leaves what is essentially paid allowance unused, when it could have been spent on productive tasks that would help you later.
+
+**What it does:** the plugin reads both limits (the numbers `/usage` shows) and compares the week to a pace line that aims to spend all usage before the reset without running out at any point (it saves a reserve by the end to account for unpredictable user behavior, 20% by default). Based on your usage compared to the pace line, it picks one of these modes:
+
+- **normal**: on pace as expected? Then everything runs as usual.
+- **light**: over pace, or a hot 5-hour window? Agents are told to avoid subagents if possible to save tokens, and optional cron jobs wait.
+- **skip**: far over pace, at your reserve, or about to hit the 5-hour limit? Then only vital cron jobs that are needed for daily function run; the rest are skipped before the model is called (zero tokens).
+- **heavy**: lots of usage left late in the week? Spare cron jobs (big non-urgent work like automated bug-fix runs or database organization) use the leftover allowance.
+
+**Why this approach:** it uses Hermes' own usage numbers and gates work before it starts, so no usage is spent on a run that should wait.
+
+## At a glance
 
 - The agent calls the **`claude_pace`** tool before big or optional work and follows its guidance.
 - You type **`/pace`** in any chat surface, or run **`hermes pace`**, and get one line:
@@ -27,10 +30,6 @@ priority gate that skips a run before the model is called, so a skipped run spen
   the rest wait. Pacing never stops a vital job: only a used-up limit does.
 - You choose how much of the week stays yours with one setting, **`reserve_pct`**. Agents and gated
   crons are paced to the rest and stop when the week reaches it. Vital crons may use it (see below).
-
-Why a plugin and not a skill: the numbers sit behind the Claude sign-in. A prompt or skill can't read
-them without handling the token. This plugin asks Hermes, which already holds the sign-in, and never
-sees it.
 
 ## Documentation
 
