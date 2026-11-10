@@ -66,7 +66,7 @@ First match wins (defaults shown, all of them settings):
 |---|---|---|
 | skip | 5h ≥ 85 %, week ≥ the target (80 %: the reserve is reached), or week more than 15 points over pace | Do only what was asked, keep it short, defer optional work |
 | light | 5h ≥ 60 %, or week over pace | Short turns, no subagents or long tool loops |
-| heavy | 5h < 50 % and either the week is under the heavy line, or it resets within 24 h with use 25 or more points under the target (≤ 55 %) | Spare capacity that would go unused: run the big jobs |
+| heavy | 5h < 50 % and either the week is under the heavy line, or it resets within 24 h with use 30 or more points under the target (≤ 50 %) | Spare capacity that would go unused: run the big jobs |
 | normal | everything else | Work normally |
 
 - **5-hour reset grace.** A 5-hour window that resets within 45 minutes counts as fresh for the light
@@ -200,7 +200,7 @@ falls back to its default and shows up in the tool result as `config_warnings`.
 | `h5_light_pct` | 60 | Light at or above this 5-hour use |
 | `h5_heavy_max` | 50 | Heavy only while the 5-hour window is under this |
 | `heavy_reset_within_h` | 24 | Use-it-or-lose-it window before the weekly reset (hours) ... |
-| `heavy_reset_margin` | 25 | ... while the week is at least this many points under the target (55 % by default) |
+| `heavy_reset_margin` | 30 | ... while the week is at least this many points under the target (50 % by default) |
 | `h5_fresh_within_min` | 45 | A 5-hour window resetting this soon counts as fresh ... |
 | `h5_burn_per_min` | 0.5 | ... unless this burn per minute would hit the 5-hour hard stop first |
 | `no_pace_week_light_pct` | 60 | No weekly reset time known: light at or above this weekly use |

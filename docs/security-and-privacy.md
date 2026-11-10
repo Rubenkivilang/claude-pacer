@@ -106,9 +106,9 @@ wording. A scoped verify-fix scan of the patched files found no remaining issue.
 
 That scan covered the code before the job priorities (`--priority`, version 0.2.0) were added. The
 changes since (0.2.0 priorities, 0.3.0 back-loaded heavy line, 0.4.0 vital jobs that pacing never
-stops) are in `pacing.py`, `report.py`, `core.py` and `cli.py`; they add no reads, network calls or
-file access. A second standard scan of version 0.4.0 (Nov 8, 2026, all 24 files, all 10 OWASP 2025
-lanes) found nothing at any severity.
+stops, 0.4.1 a new default for `heavy_reset_margin`) are in `pacing.py`, `report.py`, `core.py` and
+`cli.py`; they add no reads, network calls or file access. A second standard scan of version 0.4.0
+(Nov 8, 2026, all 24 files, all 10 OWASP 2025 lanes) found nothing at any severity.
 
 ## Limits worth knowing
 

@@ -69,6 +69,35 @@ class TestRequiredCases(unittest.TestCase):
         self.assertEqual(decide(10, 20, hours(84), NOW, t=flat).rule, "under_pace")
         self.assertEqual(decide(10, 25, hours(84), NOW, t=flat).mode, "normal")  # pace - 25 exactly is not under
 
+    def test_heavy_edge_is_one_smooth_curve(self):
+        """0.4.1 (Ruben, Nov 10: "a weird corner"): with the defaults, the top of the heavy zone climbs smoothly
+        all week. The use-it-or-lose-it ceiling (50 %) sits under the heavy line's 50.7 % at 24 h before the
+        reset, so it never shows: no jump at 144 h, no flat shelf after it (0.4.0's ceiling 55 made both)."""
+
+        def edge(resets_in_h):  # the highest week % decide() still calls heavy (bisection; heavy is 0 % up to it)
+            lo, hi = 0.0, 100.0
+            self.assertEqual(decide(10, lo, hours(resets_in_h), NOW).mode, "heavy")
+            for _ in range(40):
+                mid = (lo + hi) / 2
+                lo, hi = (mid, hi) if decide(10, mid, hours(resets_in_h), NOW).mode == "heavy" else (lo, mid)
+            return lo
+
+        elapsed = [i / 2 for i in range(2, 168 * 2)]  # every 30 min, 1 h after the reset (line 0.1 %) to 30 min before
+        edges = [edge(168 - e) for e in elapsed]
+        # the edge IS the heavy line, all week: one curve (0.4.0 sat at its 55 % ceiling from 144 h to ~148.5 h)
+        for e, v in zip(elapsed, edges):
+            self.assertAlmostEqual(v, pacing.heavy_line(168 - e, DEFAULTS), delta=0.001, msg=f"{e} h after the reset")
+        steps = [b - a for a, b in zip(edges, edges[1:])]
+        self.assertTrue(all(s >= 0 for s in steps), "the heavy edge never drops")
+        self.assertLess(max(steps), 1.3)  # no jump: the largest step is the line's own in the last 30 min (0.4.0: 4.3)
+        late = steps[elapsed.index(132):]  # no flat shelf in the last 36 h: the line climbs > 0.1 per 30 min there
+        self.assertTrue(all(s > 0 for s in late), "the heavy edge must keep climbing to the reset")
+        i = elapsed.index(144)
+        self.assertLess(edges[i] - edges[i - 1], 0.6)  # the line's own 0.5 per 30 min there (0.4.0: 50.2 -> 55)
+        self.assertGreater(pacing.heavy_line(24, DEFAULTS), DEFAULTS.heavy_reset_week_max)  # 50.7 > 50 at 144 h
+        self.assertEqual(decide(10, 50.3, hours(24), NOW).rule, "under_pace")  # over the ceiling, under the line
+        self.assertEqual(decide(10, 50, hours(20), NOW).rule, "reset_soon_spare")  # the ceiling still applies
+
     def test_heavy_needs_a_quiet_5h_window(self):
         self.assertEqual(decide(55, 10, hours(84), NOW, h5_reset=hours(3)).mode, "normal")
         self.assertEqual(decide(None, 10, hours(84), NOW).mode, "normal")  # unknown 5h: never heavy
@@ -124,10 +153,10 @@ class TestHardStopsAndFallbacks(unittest.TestCase):
 
 class TestSettings(unittest.TestCase):
     def test_defaults_are_the_gate_values(self):
-        self.assertEqual(DEFAULTS, Thresholds(85, 20, 10, 15, 45, 0.5, 60, 60, 50, 24, 25, 25, 3))
+        self.assertEqual(DEFAULTS, Thresholds(85, 20, 10, 15, 45, 0.5, 60, 60, 50, 24, 30, 25, 3))
         # The wake gate's WEEK_TARGET_PCT, WEEK_SKIP_PCT and HEAVY_RESET_WEEK_MAX, all from the one reserve.
         self.assertEqual((DEFAULTS.week_target_pct, DEFAULTS.week_skip_pct, DEFAULTS.heavy_reset_week_max),
-                         (80, 80, 55))
+                         (80, 80, 50))
         t, warnings = pacing.thresholds_from(_plugin.config())
         self.assertEqual((t, warnings), (DEFAULTS, []))
 
@@ -165,7 +194,7 @@ class TestReserve(unittest.TestCase):
 
     def test_reserve_sets_the_target_and_the_hard_stop(self):
         t = Thresholds(reserve_pct=30)
-        self.assertEqual((t.week_target_pct, t.week_skip_pct, t.heavy_reset_week_max), (70, 70, 45))
+        self.assertEqual((t.week_target_pct, t.week_skip_pct, t.heavy_reset_week_max), (70, 70, 40))
         self.assertEqual((week_pace(168, t), week_pace(84, t), week_pace(0, t)), (10.0, 45.0, 70.0))
         d = decide(10, 70, hours(84), NOW, t=t)
         self.assertEqual((d.mode, d.rule, d.reason), ("skip", "week_hard_stop", "week 70% >= 70% hard stop"))
@@ -180,10 +209,10 @@ class TestReserve(unittest.TestCase):
                          ("light", "over_pace", "over pace; week 42% vs pace 40%, resets in 96.0h"))
 
     def test_use_it_or_lose_it_leaves_the_reserve_alone(self):
-        t = Thresholds(reserve_pct=40, heavy_ramp=0)  # target 60, straight rule: heavy before the reset only <= 35
+        t = Thresholds(reserve_pct=40, heavy_ramp=0)  # target 60, straight rule: heavy before the reset only <= 30
         self.assertEqual(decide(10, 40, hours(20), NOW).rule, "reset_soon_spare")  # the default reserve: heavy
         self.assertEqual(decide(10, 40, hours(20), NOW, t=t).mode, "normal")
-        self.assertEqual(decide(10, 35, hours(20), NOW, t=t).rule, "reset_soon_spare")
+        self.assertEqual(decide(10, 30, hours(20), NOW, t=t).rule, "reset_soon_spare")
         # the exponential heavy line reaches further late in the week, but heavy never touches the target:
         # the reserve stays the hard stop
         b = Thresholds(reserve_pct=40)

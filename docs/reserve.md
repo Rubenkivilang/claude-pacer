@@ -18,7 +18,7 @@ The reserve sets the **weekly target**, `100 − reserve_pct`, and three things 
 |---|---|---|---|
 | Weekly target (where the pace line ends) | 100 − reserve | 80 % | 70 % |
 | Weekly hard stop (skip from here on; vital jobs go on) | = target | 80 % | 70 % |
-| Use-it-or-lose-it ceiling (heavy in the last 24 h) | target − `heavy_reset_margin` | 55 % | 45 % |
+| Use-it-or-lose-it ceiling (heavy in the last 24 h) | target − `heavy_reset_margin` | 50 % | 40 % |
 
 The pace line is `min(target, target × fraction_of_week_gone + 10)`, so a bigger reserve makes it
 climb more slowly:

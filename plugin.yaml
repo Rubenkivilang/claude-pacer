@@ -1,7 +1,7 @@
 name: claude-pacer
 label: Claude Pacer
 kind: standalone
-version: 0.4.0
+version: 0.4.1
 description: >
   Paces a Claude Pro/Max subscription. Reads the 5-hour and weekly usage windows through Hermes'
   own usage fetcher (the numbers /usage shows), draws a pace line to everything but a reserve you
@@ -74,7 +74,7 @@ config_schema:
     description: Heavy when the week resets within this many hours while use is still the next setting's margin or more under the target.
   heavy_reset_margin:
     type: float
-    default: 25
+    default: 30
     label: Use-it-or-lose-it margin (points under target)
     description: Points under the target (100 minus the reserve) at or below which the last hours before the reset count as spare capacity.
   h5_fresh_within_min:

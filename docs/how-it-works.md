@@ -87,7 +87,7 @@ exception: pacing never stops them, so they may use the reserve until a limit is
 7. **light** if week > pace.
 8. **heavy** if 5h < `h5_heavy_max` (50) and either
    - the week resets within `heavy_reset_within_h` (24 h) and week ≤ target − `heavy_reset_margin`
-     (80 − 25 = 55), or
+     (80 − 30 = 50), or
    - week < the heavy line (below).
 9. **normal** otherwise.
 

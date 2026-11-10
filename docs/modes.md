@@ -19,7 +19,7 @@ Defaults shown; the rules are checked in this order and the first match wins
 | skip | `far_over_pace` | week > pace + 15 (`pace_skip_margin`) | far over pace |
 | light | `h5_hot` | 5h ≥ 60 % (`h5_light_pct`) | 5h window running hot |
 | light | `over_pace` | week > pace | over pace |
-| heavy | `reset_soon_spare` | 5h < 50 % (`h5_heavy_max`), week resets within 24 h (`heavy_reset_within_h`), week ≤ target − 25 (`heavy_reset_margin`), so ≤ 55 % | spare capacity, week resets soon |
+| heavy | `reset_soon_spare` | 5h < 50 % (`h5_heavy_max`), week resets within 24 h (`heavy_reset_within_h`), week ≤ target − 30 (`heavy_reset_margin`), so ≤ 50 % | spare capacity, week resets soon |
 | heavy | `under_pace` | 5h < 50 %, week < the heavy line (exponential, 0 % at the reset to 80 % at the next; `heavy_ramp`, see [How it works](how-it-works.md#the-heavy-line)) | well under pace |
 | normal | `on_pace` | everything else | on pace |
 | normal | `error` | the check itself failed | pacing error, fail open |

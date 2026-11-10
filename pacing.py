@@ -44,7 +44,7 @@ Gated cron jobs carry a priority (``job_runs``), most to least important:
     spare     runs only in heavy: use-it-or-lose-it work on spare capacity
 
 Ported from the wake gate this plugin grew out of. With the default 20 % reserve (target 80, weekly
-hard stop 80, use-it-or-lose-it ceiling 55) the rules, defaults and reason strings are the gate's,
+hard stop 80, use-it-or-lose-it ceiling 50; the gate had 55) the rules, defaults and reason strings are the gate's,
 minus two inputs that only mean something on that setup (a Hermes-update-pending pause and a "the
 human is chatting right now" light rule).
 """
@@ -63,7 +63,8 @@ MODES = ("skip", "light", "normal", "heavy")  # least to most generous
 @dataclass(frozen=True)
 class Thresholds:
     """Every pacing knob (the plugin's settings). The defaults reproduce the original wake gate: a 20 %
-    reserve is its weekly target 80, its weekly hard stop 80 and its use-it-or-lose-it ceiling 55."""
+    reserve is its weekly target 80, its weekly hard stop 80 and its use-it-or-lose-it ceiling 50 (the gate had 55;
+    0.4.1 moved it under the heavy line's 50.7 % at 24 h before the reset, so the heavy edge has no step)."""
 
     h5_skip_pct: float = 85             # 5h hard stop: skip at or above
     reserve_pct: float = 20             # share of the week kept unused for the user; agents pace to the rest
@@ -75,7 +76,7 @@ class Thresholds:
     no_pace_week_light_pct: float = 60  # weekly reset time unknown: light at or above this week use
     h5_heavy_max: float = 50            # heavy only while the 5h window is under this
     heavy_reset_within_h: float = 24    # use it or lose it: week resets within this many hours ...
-    heavy_reset_margin: float = 25      # ... with week at least this many points under the target
+    heavy_reset_margin: float = 30      # ... with week at least this many points under the target
     pace_heavy_margin: float = 25       # heavy_ramp 0: heavy when week < pace - this
     heavy_ramp: float = 3               # heavy line steepness: target * expm1(k*elapsed)/expm1(k); 0 = straight
 
