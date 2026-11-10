@@ -1,6 +1,6 @@
 # claude-pacer
 
-For Hermes Agent running on a Claude Pro/Max subscription: claude-pacer paces your agents and cron
+A plugin for Hermes Agent running on a Claude Pro/Max subscription: claude-pacer paces your agents and cron
 jobs across the plan's weekly and 5-hour limits.
 
 On a Claude Pro/Max plan, your Hermes agents, your cron jobs and your own chats all share one 5-hour
